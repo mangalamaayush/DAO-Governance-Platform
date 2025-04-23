@@ -35,4 +35,15 @@ contract DAO {
         proposals[_proposalId].voteCount++;
         hasVoted[msg.sender][_proposalId] = true;
     }
+
+    // ✅ New function to execute a proposal
+    function executeProposal(uint _proposalId) public onlyOwner {
+        require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
+        Proposal storage proposal = proposals[_proposalId];
+        require(!proposal.executed, "Proposal already executed.");
+        require(proposal.voteCount > 0, "Proposal must have at least one vote.");
+
+        proposal.executed = true;
+        // Place proposal execution logic here if needed (e.g., call other contract)
+    }
 }
