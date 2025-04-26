@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.18;
 
 contract DAO {
     struct Proposal {
@@ -86,5 +88,11 @@ contract DAO {
         }
 
         return (ids, descriptions, voteCounts, executions);
+    }
+
+    /// @notice Check if a user has voted on a specific proposal
+    function getVotingStatus(address _voter, uint _proposalId) public view returns (bool) {
+        require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
+        return hasVoted[_voter][_proposalId];
     }
 }
