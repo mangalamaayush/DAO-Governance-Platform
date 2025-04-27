@@ -46,7 +46,7 @@ contract DAO {
         require(proposal.voteCount > 0, "Proposal must have at least one vote.");
 
         proposal.executed = true;
-        // You can add actual execution logic here
+        // Additional execution logic can be added here
     }
 
     /// @notice Get details of a specific proposal
@@ -94,5 +94,37 @@ contract DAO {
     function getVotingStatus(address _voter, uint _proposalId) public view returns (bool) {
         require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
         return hasVoted[_voter][_proposalId];
+    }
+
+    /// @notice Change the owner of the DAO (onlyOwner)
+    function changeOwner(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "New owner cannot be zero address.");
+        owner = newOwner;
+    }
+
+    /// @notice Get total number of votes on all proposals
+    function getTotalVotes() public view returns (uint totalVotes) {
+        for (uint i = 1; i <= proposalCount; i++) {
+            totalVotes += proposals[i].voteCount;
+        }
+    }
+
+    /// @notice Get list of proposals that are not yet executed
+    function getPendingProposals() public view returns (uint[] memory pendingIds) {
+        uint count;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (!proposals[i].executed) {
+                count++;
+            }
+        }
+
+        pendingIds = new uint[](count);
+        uint index;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (!proposals[i].executed) {
+                pendingIds[index] = proposals[i].id;
+                index++;
+            }
+        }
     }
 }
