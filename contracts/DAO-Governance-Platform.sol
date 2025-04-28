@@ -127,4 +127,24 @@ contract DAO {
             }
         }
     }
+
+    /// @notice Get the winning proposal (highest votes)
+    function getWinningProposal() public view returns (uint winningProposalId, string memory description, uint highestVoteCount) {
+        uint highestVotes = 0;
+        uint winnerId = 0;
+
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (proposals[i].voteCount > highestVotes) {
+                highestVotes = proposals[i].voteCount;
+                winnerId = proposals[i].id;
+            }
+        }
+
+        if (winnerId == 0) {
+            return (0, "No proposals yet", 0);
+        } else {
+            Proposal storage winner = proposals[winnerId];
+            return (winner.id, winner.description, winner.voteCount);
+        }
+    }
 }
