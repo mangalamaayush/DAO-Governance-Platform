@@ -11,6 +11,7 @@ contract DAO {
 
     mapping(uint => Proposal) public proposals;
     mapping(address => mapping(uint => bool)) public hasVoted;
+    mapping(uint => address[]) public votersForProposal; // NEW: Track voters
     uint public proposalCount;
     address public owner;
 
@@ -23,22 +24,20 @@ contract DAO {
         owner = msg.sender;
     }
 
-    /// @notice Create a new proposal (onlyOwner)
     function createProposal(string memory _description) public onlyOwner {
         proposalCount++;
         proposals[proposalCount] = Proposal(proposalCount, _description, 0, false);
     }
 
-    /// @notice Vote on a proposal
     function vote(uint _proposalId) public {
         require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
         require(!hasVoted[msg.sender][_proposalId], "Already voted on this proposal.");
 
         proposals[_proposalId].voteCount++;
         hasVoted[msg.sender][_proposalId] = true;
+        votersForProposal[_proposalId].push(msg.sender); // NEW: Save who voted
     }
 
-    /// @notice Execute a proposal (onlyOwner)
     function executeProposal(uint _proposalId) public onlyOwner {
         require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
         Proposal storage proposal = proposals[_proposalId];
@@ -46,10 +45,8 @@ contract DAO {
         require(proposal.voteCount > 0, "Proposal must have at least one vote.");
 
         proposal.executed = true;
-        // Additional execution logic can be added here
     }
 
-    /// @notice Get details of a specific proposal
     function getProposal(uint _proposalId) public view returns (
         uint id,
         string memory description,
@@ -66,7 +63,6 @@ contract DAO {
         );
     }
 
-    /// @notice Get all proposals' summary
     function getAllProposals() public view returns (
         uint[] memory ids,
         string[] memory descriptions,
@@ -90,26 +86,22 @@ contract DAO {
         return (ids, descriptions, voteCounts, executions);
     }
 
-    /// @notice Check if a user has voted on a specific proposal
     function getVotingStatus(address _voter, uint _proposalId) public view returns (bool) {
         require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
         return hasVoted[_voter][_proposalId];
     }
 
-    /// @notice Change the owner of the DAO (onlyOwner)
     function changeOwner(address newOwner) public onlyOwner {
         require(newOwner != address(0), "New owner cannot be zero address.");
         owner = newOwner;
     }
 
-    /// @notice Get total number of votes on all proposals
     function getTotalVotes() public view returns (uint totalVotes) {
         for (uint i = 1; i <= proposalCount; i++) {
             totalVotes += proposals[i].voteCount;
         }
     }
 
-    /// @notice Get list of proposals that are not yet executed
     function getPendingProposals() public view returns (uint[] memory pendingIds) {
         uint count;
         for (uint i = 1; i <= proposalCount; i++) {
@@ -128,7 +120,6 @@ contract DAO {
         }
     }
 
-    /// @notice Get the winning proposal (highest votes)
     function getWinningProposal() public view returns (uint winningProposalId, string memory description, uint highestVoteCount) {
         uint highestVotes = 0;
         uint winnerId = 0;
@@ -147,4 +138,30 @@ contract DAO {
             return (winner.id, winner.description, winner.voteCount);
         }
     }
+
+    // ==================== NEW FUNCTIONS ====================
+
+    /// @notice Check if a proposal has passed (at least 5 votes)
+    function hasProposalPassed(uint _proposalId) public view returns (bool) {
+        require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
+        Proposal storage proposal = proposals[_proposalId];
+        return proposal.voteCount >= 5;
+    }
+
+    /// @notice Get list of voters who voted for a proposal
+    function getVotersForProposal(uint _proposalId) public view returns (address[] memory) {
+        require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
+        return votersForProposal[_proposalId];
+    }
+
+    /// @notice Delete a proposal (onlyOwner)
+    function deleteProposal(uint _proposalId) public onlyOwner {
+        require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
+        Proposal storage proposal = proposals[_proposalId];
+        require(!proposal.executed, "Cannot delete executed proposal.");
+
+        delete proposals[_proposalId];
+        delete votersForProposal[_proposalId];
+    }
+
 }
