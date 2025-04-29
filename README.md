@@ -28,6 +28,6 @@ This smart contract can serve as the governance backbone for DAOs in DeFi, NFTs,
 
 ---
 
-## Contract Details : 0xB1F23f63F8688C3e39Fff02738189eD302c8a510
+## Contract Details : 0x3Cb156Dd68f87c8DA2c016A10feC397FfF6ff3c5
+<img width="1102" alt="image" src="https://github.com/user-attachments/assets/7c271218-d160-4f01-b252-36668aeeb1f1" />
 
-<img width="1125" alt="image" src="https://github.com/user-attachments/assets/05631676-3da2-4fb2-bd96-f29f0cd8a8ce" />
