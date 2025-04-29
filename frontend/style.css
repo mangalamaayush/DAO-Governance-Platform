@@ -1,0 +1,87 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f6f8;
+}
+
+.container {
+  width: 90%;
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+  text-align: center;
+  color: #333;
+}
+
+p {
+  color: #555;
+}
+
+.button {
+  padding: 10px 20px;
+  margin: 10px 5px;
+  background-color: #5c6bc0;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.button:hover {
+  background-color: #3f51b5;
+}
+
+.execute {
+  background-color: #e53935;
+}
+
+.execute:hover {
+  background-color: #d32f2f;
+}
+
+.create-proposal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.create-proposal input {
+  width: 300px;
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.proposals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.proposal-card {
+  background: #f9f9f9;
+  margin: 15px;
+  padding: 20px;
+  border-radius: 10px;
+  width: 250px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.winner {
+  margin-top: 40px;
+  padding: 20px;
+  background: #e8f5e9;
+  border-radius: 10px;
+  text-align: center;
+}
