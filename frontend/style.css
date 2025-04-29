@@ -1,0 +1,80 @@
+/* style.css */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.proposal-creation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.proposal-creation input {
+    width: 75%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.proposal-creation button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.proposal-creation button:hover {
+    background-color: #45a049;
+}
+
+.proposals-list {
+    margin-top: 20px;
+}
+
+.proposals-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.proposals-list li {
+    background-color: #f4f6f9;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.proposals-list button {
+    padding: 8px 16px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.proposals-list button:hover {
+    background-color: #0056b3;
+}
