@@ -11,7 +11,7 @@ contract DAO {
 
     mapping(uint => Proposal) public proposals;
     mapping(address => mapping(uint => bool)) public hasVoted;
-    mapping(uint => address[]) public votersForProposal; // NEW: Track voters
+    mapping(uint => address[]) public votersForProposal; // Track voters
     uint public proposalCount;
     address public owner;
 
@@ -35,7 +35,7 @@ contract DAO {
 
         proposals[_proposalId].voteCount++;
         hasVoted[msg.sender][_proposalId] = true;
-        votersForProposal[_proposalId].push(msg.sender); // NEW: Save who voted
+        votersForProposal[_proposalId].push(msg.sender);
     }
 
     function executeProposal(uint _proposalId) public onlyOwner {
@@ -164,4 +164,12 @@ contract DAO {
         delete votersForProposal[_proposalId];
     }
 
+    /// @notice Update proposal description (onlyOwner, if not executed)
+    function updateProposalDescription(uint _proposalId, string memory newDescription) public onlyOwner {
+        require(_proposalId > 0 && _proposalId <= proposalCount, "Invalid proposal ID.");
+        Proposal storage proposal = proposals[_proposalId];
+        require(!proposal.executed, "Cannot update an executed proposal.");
+
+        proposal.description = newDescription;
+    }
 }
