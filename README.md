@@ -1,33 +1,42 @@
-# 🗳️ DAO Smart Contract
-
-## 📌 Project Title
-**Decentralized Autonomous Organization (DAO) Contract**
+# 🗳️ Simple DAO Voting System
 
 ## 🧾 Project Description
-This DAO smart contract allows for decentralized proposal creation and community-driven voting on-chain. It enables the contract owner to create proposals and lets participants vote to signal consensus. Once a proposal gains votes, it can be executed to reflect collective decision-making.
+
+This project is a decentralized voting system built using Ethereum smart contracts. It allows a DAO (Decentralized Autonomous Organization) to manage proposals, cast votes, track results, and execute winning decisions transparently and securely on-chain. Only the owner can create or delete proposals, while any user can vote once per proposal. 
+
+The system ensures voting integrity, prevents duplicate votes, and provides key information such as pending proposals, vote tallies, and the winning proposal at any time.
 
 ## 🎯 Project Vision
-The goal of this project is to lay the foundational framework for a decentralized governance system that empowers communities to participate in organizational decisions without relying on centralized control or intermediaries. 
 
-This smart contract can serve as the governance backbone for DAOs in DeFi, NFTs, community treasuries, or any Web3-native collective.
+The vision behind this project is to enable a lightweight, secure, and extensible DAO governance system for communities, organizations, or dApp platforms. It aims to:
 
-## 🚀 Key Features
-- 🏗️ **Proposal Creation**: Only the DAO owner can create proposals.
-- 🗳️ **Voting System**: Any participant can vote on proposals, one vote per address.
-- 🔒 **Vote Tracking**: Prevents double voting by tracking who has voted.
-- ✅ **Proposal Execution**: Owner can execute proposals after community approval (i.e., at least one vote).
-- 🔍 **Proposal Metadata**: Each proposal has an ID, description, vote count, and execution status.
+- Empower communities with decentralized decision-making.
+- Ensure trustless voting through smart contract logic.
+- Provide a foundation for larger governance ecosystems with on-chain transparency.
 
-## 🔮 Future Scope
-- ⚖️ **Token-Based Voting**: Introduce governance tokens for vote weighting.
-- 🧠 **Quorum & Timelocks**: Require a minimum number of votes and introduce delay before execution.
-- 🛡️ **Permissionless Proposal Creation**: Allow verified members or token holders to propose ideas.
-- 📡 **Multisig Integration**: Combine with Gnosis Safe or similar for secure proposal execution.
-- 🧩 **Modular Actions**: Add ability for proposals to execute on-chain logic (e.g., treasury transfers).
-- 🌐 **Frontend Dashboard**: Build a UI for proposal tracking, voting, and execution via MetaMask.
+## 🔑 Key Features
+
+- ✅ **Create & Manage Proposals** – Only the DAO owner can create or delete proposals.
+- 🗳️ **Vote on Proposals** – Any user can vote once per proposal, with vote tracking.
+- 📊 **Winning Proposal Detection** – View the proposal with the highest vote count.
+- 👥 **Voter Tracking** – Get a list of addresses who voted on a proposal.
+- ⚙️ **Execution Control** – Proposals can be marked as executed by the owner.
+- 📝 **Proposal Editing** – Owners can update proposal descriptions (if not executed).
+- 🚫 **Double Voting Prevention** – Built-in mechanism ensures one vote per user per proposal.
+- 📌 **Utility Views** – Check voting status, get all/pending proposals, and view total votes.
+
+## 🚀 Future Scope
+
+- 🌐 **Off-chain Integration** – Connect with frontend or DAO dashboards using web3.js or ethers.js.
+- 🔐 **Role-based Permissions** – Add multi-owner or role-based access control (e.g., Gnosis Safe).
+- 🧠 **Quadratic Voting** – Implement weighted voting mechanisms for fairer governance.
+- ⛓️ **Chain Agnostic Deployment** – Port to other EVM-compatible chains (Polygon, BSC, etc).
+- 🔄 **Upgradeability** – Use proxy patterns for future upgrades without contract redeployment.
+- 📲 **Mobile Interface** – Develop a responsive dApp frontend for mobile governance.
 
 ---
 
-## Contract Details : 0x3Cb156Dd68f87c8DA2c016A10feC397FfF6ff3c5
-<img width="1102" alt="image" src="https://github.com/user-attachments/assets/7c271218-d160-4f01-b252-36668aeeb1f1" />
+## Contract Details : 0x4F48847Ea108F5dfa1Dd4692A82660490eBb54B2
+<img width="1103" alt="image" src="https://github.com/user-attachments/assets/974387a0-93c5-40fb-8bca-9ba932f7bbcf" />
+
 
