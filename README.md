@@ -36,7 +36,8 @@ The vision behind this project is to enable a lightweight, secure, and extensibl
 
 ---
 
-## Contract Details : 0x4F48847Ea108F5dfa1Dd4692A82660490eBb54B2
-<img width="1103" alt="image" src="https://github.com/user-attachments/assets/974387a0-93c5-40fb-8bca-9ba932f7bbcf" />
+## Contract Details : 0xd05bDCbA66cCF6F759B9dA07c246E83F8F8b5946
+<img width="1119" alt="image" src="https://github.com/user-attachments/assets/5a995553-3ca1-41c2-bac2-5a5e6854d6de" />
+
 
 
