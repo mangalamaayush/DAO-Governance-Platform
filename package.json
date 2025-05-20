@@ -1,0 +1,15 @@
+{
+  "name": "dao-governance-platform",
+  "version": "1.0.0",
+  "description": "A simple DAO Governance system using Solidity and Hardhat",
+  "scripts": {
+    "test": "npx hardhat test",
+    "deploy": "npx hardhat run scripts/deploy.js --network coretestnet2"
+  },
+  "devDependencies": {
+    "hardhat": "^2.20.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "ethers": "^6.7.0",
+    "dotenv": "^16.3.1"
+  }
+}
