@@ -99,4 +99,14 @@ contract DAOGovernance {
         require(_newOwner != address(0), "Invalid address");
         owner = _newOwner;
     }
+
+    /// 🔍 New Function: Get Remaining Voting Time for a Proposal
+    function getRemainingTime(uint _proposalId) public view returns (uint) {
+        Proposal storage p = proposals[_proposalId];
+        if (block.timestamp >= p.deadline) {
+            return 0;
+        } else {
+            return p.deadline - block.timestamp;
+        }
+    }
 }
