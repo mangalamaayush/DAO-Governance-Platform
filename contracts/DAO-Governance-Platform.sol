@@ -19,7 +19,7 @@ contract DAOGovernance {
     }
 
     mapping(uint => Proposal) public proposals;
-    mapping(address => uint) public voteHistory; // track number of votes per user
+    mapping(address => uint) public voteHistory;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not authorized");
@@ -100,13 +100,48 @@ contract DAOGovernance {
         owner = _newOwner;
     }
 
-    /// 🔍 New Function: Get Remaining Voting Time for a Proposal
+    /// 🔍 Get Remaining Voting Time for a Proposal
     function getRemainingTime(uint _proposalId) public view returns (uint) {
         Proposal storage p = proposals[_proposalId];
         if (block.timestamp >= p.deadline) {
             return 0;
         } else {
             return p.deadline - block.timestamp;
+        }
+    }
+
+    /// 🗂️ Get Summary of All Proposals
+    function getAllProposals()
+        public
+        view
+        returns (
+            uint[] memory ids,
+            string[] memory descriptions,
+            ProposalType[] memory types,
+            uint[] memory voteCounts,
+            uint[] memory deadlines,
+            bool[] memory executedList,
+            bool[] memory approvedList
+        )
+    {
+        ids = new uint[](proposalCount);
+        descriptions = new string[](proposalCount);
+        types = new ProposalType[](proposalCount);
+        voteCounts = new uint[](proposalCount);
+        deadlines = new uint[](proposalCount);
+        executedList = new bool[](proposalCount);
+        approvedList = new bool[](proposalCount);
+
+        for (uint i = 1; i <= proposalCount; i++) {
+            Proposal storage p = proposals[i];
+            uint index = i - 1;
+            ids[index] = p.id;
+            descriptions[index] = p.description;
+            types[index] = p.proposalType;
+            voteCounts[index] = p.voteCount;
+            deadlines[index] = p.deadline;
+            executedList[index] = p.executed;
+            approvedList[index] = p.approved;
         }
     }
 }
