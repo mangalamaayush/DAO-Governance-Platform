@@ -16,6 +16,7 @@ contract DAOGovernance {
         bool executed;
         bool approved;
         mapping(address => bool) voters;
+        address[] voterList;
     }
 
     mapping(uint => Proposal) public proposals;
@@ -55,6 +56,7 @@ contract DAOGovernance {
         require(!p.voters[msg.sender], "Already voted");
 
         p.voters[msg.sender] = true;
+        p.voterList.push(msg.sender);
         p.voteCount++;
         voteHistory[msg.sender]++;
         emit Voted(_proposalId, msg.sender);
@@ -100,7 +102,6 @@ contract DAOGovernance {
         owner = _newOwner;
     }
 
-    /// 🔍 Get Remaining Voting Time for a Proposal
     function getRemainingTime(uint _proposalId) public view returns (uint) {
         Proposal storage p = proposals[_proposalId];
         if (block.timestamp >= p.deadline) {
@@ -110,7 +111,6 @@ contract DAOGovernance {
         }
     }
 
-    /// 🗂️ Get Summary of All Proposals
     function getAllProposals()
         public
         view
@@ -143,5 +143,10 @@ contract DAOGovernance {
             executedList[index] = p.executed;
             approvedList[index] = p.approved;
         }
+    }
+
+    /// 🆕 Get list of voters for a specific proposal
+    function getProposalVoters(uint _proposalId) public view returns (address[] memory) {
+        return proposals[_proposalId].voterList;
     }
 }
