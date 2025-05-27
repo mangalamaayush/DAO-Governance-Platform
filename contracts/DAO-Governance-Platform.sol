@@ -145,8 +145,31 @@ contract DAOGovernance {
         }
     }
 
-    /// 🆕 Get list of voters for a specific proposal
     function getProposalVoters(uint _proposalId) public view returns (address[] memory) {
         return proposals[_proposalId].voterList;
+    }
+
+    /// 🆕 DAO Statistics Summary
+    function getProposalStats() public view returns (
+        uint totalProposals,
+        uint totalVotes,
+        uint executedProposals,
+        uint approvedProposals
+    ) {
+        totalProposals = proposalCount;
+        totalVotes = 0;
+        executedProposals = 0;
+        approvedProposals = 0;
+
+        for (uint i = 1; i <= proposalCount; i++) {
+            Proposal storage p = proposals[i];
+            totalVotes += p.voteCount;
+            if (p.executed) {
+                executedProposals++;
+                if (p.approved) {
+                    approvedProposals++;
+                }
+            }
+        }
     }
 }
