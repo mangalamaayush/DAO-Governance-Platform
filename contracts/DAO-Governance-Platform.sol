@@ -149,7 +149,6 @@ contract DAOGovernance {
         return proposals[_proposalId].voterList;
     }
 
-    /// 🆕 DAO Statistics Summary
     function getProposalStats() public view returns (
         uint totalProposals,
         uint totalVotes,
@@ -169,6 +168,29 @@ contract DAOGovernance {
                 if (p.approved) {
                     approvedProposals++;
                 }
+            }
+        }
+    }
+
+    /// 🆕 Get Active Proposals
+    function getActiveProposals() public view returns (uint[] memory activeIds) {
+        uint count = 0;
+
+        // First count how many active proposals
+        for (uint i = 1; i <= proposalCount; i++) {
+            Proposal storage p = proposals[i];
+            if (!p.executed && block.timestamp < p.deadline) {
+                count++;
+            }
+        }
+
+        activeIds = new uint[](count);
+        uint idx = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            Proposal storage p = proposals[i];
+            if (!p.executed && block.timestamp < p.deadline) {
+                activeIds[idx] = p.id;
+                idx++;
             }
         }
     }
