@@ -172,11 +172,9 @@ contract DAOGovernance {
         }
     }
 
-    /// 🆕 Get Active Proposals
     function getActiveProposals() public view returns (uint[] memory activeIds) {
         uint count = 0;
 
-        // First count how many active proposals
         for (uint i = 1; i <= proposalCount; i++) {
             Proposal storage p = proposals[i];
             if (!p.executed && block.timestamp < p.deadline) {
@@ -193,5 +191,26 @@ contract DAOGovernance {
                 idx++;
             }
         }
+    }
+
+    /// 🆕 New Function: Get Proposal IDs Voted by an Address
+    function getProposalsByVoter(address _voter) public view returns (uint[] memory) {
+        uint count = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (proposals[i].voters[_voter]) {
+                count++;
+            }
+        }
+
+        uint[] memory votedProposals = new uint[](count);
+        uint index = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (proposals[i].voters[_voter]) {
+                votedProposals[index] = i;
+                index++;
+            }
+        }
+
+        return votedProposals;
     }
 }
