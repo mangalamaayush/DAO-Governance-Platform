@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-contract DAOGovernance {
-    address public owner;
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./GovToken.sol";
+
+contract DAOGovernance is Ownable {
+    using ECDSA for bytes32;
+
+    GovToken public govToken;
     uint public proposalCount;
 
     enum ProposalType { GENERAL, FUNDING, TECHNICAL }
@@ -16,23 +22,16 @@ contract DAOGovernance {
         bool executed;
         bool approved;
         mapping(address => bool) voters;
-        address[] voterList;
     }
 
     mapping(uint => Proposal) public proposals;
-    mapping(address => uint) public voteHistory;
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not authorized");
-        _;
-    }
 
     event ProposalCreated(uint id, string description, ProposalType proposalType, uint deadline);
     event Voted(uint proposalId, address voter);
     event Executed(uint proposalId, bool approved);
 
-    constructor() {
-        owner = msg.sender;
+    constructor(address _govToken) {
+        govToken = GovToken(_govToken);
     }
 
     function createProposal(
@@ -55,10 +54,12 @@ contract DAOGovernance {
         require(block.timestamp < p.deadline, "Voting closed");
         require(!p.voters[msg.sender], "Already voted");
 
+        uint256 votes = govToken.getVotes(msg.sender);
+        require(votes > 0, "No voting power");
+
         p.voters[msg.sender] = true;
-        p.voterList.push(msg.sender);
-        p.voteCount++;
-        voteHistory[msg.sender]++;
+        p.voteCount += votes;
+
         emit Voted(_proposalId, msg.sender);
     }
 
@@ -93,15 +94,6 @@ contract DAOGovernance {
         return proposals[_proposalId].voters[_voter];
     }
 
-    function getVoteCountByAddress(address _voter) public view returns (uint) {
-        return voteHistory[_voter];
-    }
-
-    function changeOwner(address _newOwner) public onlyOwner {
-        require(_newOwner != address(0), "Invalid address");
-        owner = _newOwner;
-    }
-
     function getRemainingTime(uint _proposalId) public view returns (uint) {
         Proposal storage p = proposals[_proposalId];
         if (block.timestamp >= p.deadline) {
@@ -111,106 +103,29 @@ contract DAOGovernance {
         }
     }
 
-    function getAllProposals()
-        public
-        view
-        returns (
-            uint[] memory ids,
-            string[] memory descriptions,
-            ProposalType[] memory types,
-            uint[] memory voteCounts,
-            uint[] memory deadlines,
-            bool[] memory executedList,
-            bool[] memory approvedList
-        )
-    {
-        ids = new uint[](proposalCount);
-        descriptions = new string[](proposalCount);
-        types = new ProposalType[](proposalCount);
-        voteCounts = new uint[](proposalCount);
-        deadlines = new uint[](proposalCount);
-        executedList = new bool[](proposalCount);
-        approvedList = new bool[](proposalCount);
+    // Gasless voting via EIP-712 signature
+    function voteBySig(
+        uint _proposalId,
+        address voter,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public {
+        Proposal storage p = proposals[_proposalId];
+        require(block.timestamp < p.deadline, "Voting closed");
+        require(!p.voters[voter], "Already voted");
 
-        for (uint i = 1; i <= proposalCount; i++) {
-            Proposal storage p = proposals[i];
-            uint index = i - 1;
-            ids[index] = p.id;
-            descriptions[index] = p.description;
-            types[index] = p.proposalType;
-            voteCounts[index] = p.voteCount;
-            deadlines[index] = p.deadline;
-            executedList[index] = p.executed;
-            approvedList[index] = p.approved;
-        }
-    }
+        bytes32 structHash = keccak256(abi.encode(_proposalId, voter));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", govToken.DOMAIN_SEPARATOR(), structHash));
+        address signer = ECDSA.recover(digest, v, r, s);
+        require(signer == voter, "Invalid signature");
 
-    function getProposalVoters(uint _proposalId) public view returns (address[] memory) {
-        return proposals[_proposalId].voterList;
-    }
+        uint256 votes = govToken.getVotes(voter);
+        require(votes > 0, "No voting power");
 
-    function getProposalStats() public view returns (
-        uint totalProposals,
-        uint totalVotes,
-        uint executedProposals,
-        uint approvedProposals
-    ) {
-        totalProposals = proposalCount;
-        totalVotes = 0;
-        executedProposals = 0;
-        approvedProposals = 0;
+        p.voters[voter] = true;
+        p.voteCount += votes;
 
-        for (uint i = 1; i <= proposalCount; i++) {
-            Proposal storage p = proposals[i];
-            totalVotes += p.voteCount;
-            if (p.executed) {
-                executedProposals++;
-                if (p.approved) {
-                    approvedProposals++;
-                }
-            }
-        }
-    }
-
-    function getActiveProposals() public view returns (uint[] memory activeIds) {
-        uint count = 0;
-
-        for (uint i = 1; i <= proposalCount; i++) {
-            Proposal storage p = proposals[i];
-            if (!p.executed && block.timestamp < p.deadline) {
-                count++;
-            }
-        }
-
-        activeIds = new uint[](count);
-        uint idx = 0;
-        for (uint i = 1; i <= proposalCount; i++) {
-            Proposal storage p = proposals[i];
-            if (!p.executed && block.timestamp < p.deadline) {
-                activeIds[idx] = p.id;
-                idx++;
-            }
-        }
-    }
-
-    /// 🆕 New Function: Get Proposal IDs Voted by an Address
-    function getProposalsByVoter(address _voter) public view returns (uint[] memory) {
-        uint count = 0;
-        for (uint i = 1; i <= proposalCount; i++) {
-            if (proposals[i].voters[_voter]) {
-                count++;
-            }
-        }
-
-        uint[] memory votedProposals = new uint[](count);
-        uint index = 0;
-        for (uint i = 1; i <= proposalCount; i++) {
-            if (proposals[i].voters[_voter]) {
-                votedProposals[index] = i;
-                index++;
-            }
-        }
-
-        return votedProposals;
+        emit Voted(_proposalId, voter);
     }
 }
