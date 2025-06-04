@@ -1,43 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DAO Governance</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DAO Governance Portal</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body { background: #f0f2f5; padding: 30px; font-family: 'Segoe UI', sans-serif; }
+    .card { margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .card-header { font-weight: bold; background: #4a69bd; color: white; }
+    .btn-primary, .btn-success { margin-top: 10px; }
+    .connected { color: green; font-weight: bold; }
+    .disconnected { color: red; }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>🗳 DAO Governance Panel</h1>
-    <button id="connectWallet">🔌 Connect Wallet</button>
-
-    <div id="walletInfo"></div>
-
-    <div id="delegateSection">
-      <h3>Delegate Votes</h3>
-      <input type="text" id="delegateTo" placeholder="Delegate to address" />
-      <button id="delegateBtn">Delegate</button>
+    <h1 class="mb-4 text-center">🗳 DAO Governance Portal</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div id="walletStatus" class="disconnected">Not Connected</div>
+      <button class="btn btn-primary" id="connectWallet">🔌 Connect Wallet</button>
     </div>
 
-    <div id="proposalsSection">
-      <h2>📜 Proposals</h2>
-      <div id="proposalsList"></div>
+    <div class="card">
+      <div class="card-header">➕ Create New Proposal (Owner Only)</div>
+      <div class="card-body">
+        <input type="text" id="description" class="form-control mb-2" placeholder="Proposal Description">
+        <select id="type" class="form-select mb-2">
+          <option value="0">GENERAL</option>
+          <option value="1">FUNDING</option>
+          <option value="2">TECHNICAL</option>
+        </select>
+        <input type="number" id="duration" class="form-control mb-2" placeholder="Duration (in seconds)">
+        <button class="btn btn-success" id="createProposal">Create Proposal</button>
+      </div>
     </div>
 
-    <div id="createProposalSection">
-      <h3>➕ Create Proposal (Owner)</h3>
-      <input id="description" placeholder="Proposal Description" />
-      <select id="type">
-        <option value="0">GENERAL</option>
-        <option value="1">FUNDING</option>
-        <option value="2">TECHNICAL</option>
-      </select>
-      <input id="duration" type="number" placeholder="Duration (seconds)" />
-      <button id="createProposal">Create</button>
+    <div class="card">
+      <div class="card-header">📜 Delegate Your Vote</div>
+      <div class="card-body">
+        <input type="text" id="delegateTo" class="form-control mb-2" placeholder="Delegate to Address">
+        <button class="btn btn-primary" id="delegateBtn">Delegate</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">📋 All Proposals</div>
+      <div class="card-body" id="proposalsList">
+        <p>Loading proposals...</p>
+      </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script src="app.js"></script>
+  <script>
+    const daoAddress = "0xd05bDCbA66cCF6F759B9dA07c246E83F8F8b5946";
+    const govTokenAddress = "0xYourGovTokenAddressHere";
+
+    const daoABI = [ /* Replace with full DAO ABI */ ];
+    const tokenABI = [ /* Replace with full GovToken ABI */ ];
+
+    let provider, signer, daoContract, tokenContract, currentAccount;
+
+    const connectWallet = async () => {
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+      currentAccount = await signer.getAddress();
+      document.getElementById("walletStatus").innerText = `Connected: ${currentAccount}`;
+      document.getElementById("walletStatus").className = "connected";
+
+      daoContract = new ethers.Contract(daoAddress, daoABI, signer);
+      tokenContract = new ethers.Contract(govTokenAddress, tokenABI, signer);
+
+      loadProposals();
+    };
+
+    document.getElementById("connectWallet").onclick = connectWallet;
+
+    async function loadProposals() {
+      const list = document.getElementById("proposalsList");
+      list.innerHTML = "";
+      const count = await daoContract.proposalCount();
+      for (let i = 1; i <= count; i++) {
+        const p = await daoContract.getProposal(i);
+        const hasVoted = await daoContract.hasVoted(i, currentAccount);
+        const timeLeft = await daoContract.getRemainingTime(i);
+        const div = document.createElement("div");
+        div.className = "mb-3 p-3 border bg-light rounded";
+        div.innerHTML = `
+          <strong>ID:</strong> ${i} <br>
+          <strong>Description:</strong> ${p[0]} <br>
+          <strong>Type:</strong> ${["GENERAL", "FUNDING", "TECHNICAL"][p[1]]} <br>
+          <strong>Votes:</strong> ${p[2]} <br>
+          <strong>Deadline:</strong> ${new Date(Number(p[3]) * 1000).toLocaleString()} <br>
+          <strong>Status:</strong> ${p[4] ? "Executed" : "Pending"}, Approved: ${p[5]}<br>
+          ${!p[4] && timeLeft > 0 && !hasVoted ? `<button class='btn btn-outline-primary btn-sm mt-2' onclick='vote(${i})'>Vote</button>` : ""}
+          ${!p[4] && timeLeft === 0 ? `<button class='btn btn-outline-danger btn-sm mt-2' onclick='execute(${i})'>Execute</button>` : ""}
+        `;
+        list.appendChild(div);
+      }
+    }
+
+    async function vote(id) {
+      const tx = await daoContract.vote(id);
+      await tx.wait();
+      alert("Vote submitted!");
+      loadProposals();
+    }
+
+    async function execute(id) {
+      const quorum = prompt("Enter quorum to execute:");
+      const tx = await daoContract.executeProposal(id, quorum);
+      await tx.wait();
+      alert("Proposal executed!");
+      loadProposals();
+    }
+
+    document.getElementById("createProposal").onclick = async () => {
+      const desc = document.getElementById("description").value;
+      const type = document.getElementById("type").value;
+      const duration = document.getElementById("duration").value;
+      const tx = await daoContract.createProposal(desc, duration, type);
+      await tx.wait();
+      alert("Proposal created!");
+      loadProposals();
+    };
+
+    document.getElementById("delegateBtn").onclick = async () => {
+      const to = document.getElementById("delegateTo").value;
+      const tx = await tokenContract.delegate(to);
+      await tx.wait();
+      alert("Delegated!");
+    };
+  </script>
 </body>
 </html>
