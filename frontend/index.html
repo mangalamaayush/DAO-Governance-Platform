@@ -1,52 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DAO Governance Portal</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { background: #f0f2f5; padding: 30px; font-family: 'Segoe UI', sans-serif; }
-    .card { margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .card-header { font-weight: bold; background: #4a69bd; color: white; }
-    .btn-primary, .btn-success { margin-top: 10px; }
-    .connected { color: green; font-weight: bold; }
-    .disconnected { color: red; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #f8f9fa;
+      padding: 30px;
+    }
+    h1, h2, h3 {
+      font-weight: 700;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeInDown 1s ease;
+    }
+    .section {
+      margin-bottom: 40px;
+      padding: 30px;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      animation: fadeInUp 1s ease;
+    }
+    .section h2 {
+      margin-bottom: 20px;
+      color: #00d4ff;
+    }
+    .form-control, .form-select {
+      background-color: #ffffff10;
+      color: #fff;
+      border: 1px solid #ffffff40;
+    }
+    .form-control::placeholder {
+      color: #ccc;
+    }
+    .btn {
+      font-weight: bold;
+      border-radius: 25px;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      border: none;
+    }
+    .btn-success {
+      background-color: #28a745;
+      border: none;
+    }
+    .btn-outline-primary, .btn-outline-danger {
+      border-radius: 25px;
+    }
+    .proposal-card {
+      background-color: #ffffff10;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .connected { color: #28a745; font-weight: bold; }
+    .disconnected { color: #dc3545; font-weight: bold; }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="mb-4 text-center">🗳 DAO Governance Portal</h1>
+    <div class="header">
+      <h1 class="display-4">🗳 DAO Governance Portal</h1>
+      <p class="lead">Empowering decentralized decisions</p>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div id="walletStatus" class="disconnected">Not Connected</div>
       <button class="btn btn-primary" id="connectWallet">🔌 Connect Wallet</button>
     </div>
 
-    <div class="card">
-      <div class="card-header">➕ Create New Proposal (Owner Only)</div>
-      <div class="card-body">
-        <input type="text" id="description" class="form-control mb-2" placeholder="Proposal Description">
-        <select id="type" class="form-select mb-2">
-          <option value="0">GENERAL</option>
-          <option value="1">FUNDING</option>
-          <option value="2">TECHNICAL</option>
-        </select>
-        <input type="number" id="duration" class="form-control mb-2" placeholder="Duration (in seconds)">
-        <button class="btn btn-success" id="createProposal">Create Proposal</button>
-      </div>
+    <div class="section">
+      <h2>➕ Create New Proposal</h2>
+      <p class="text-muted">(Owner Only)</p>
+      <input type="text" id="description" class="form-control mb-2" placeholder="Proposal Description">
+      <select id="type" class="form-select mb-2">
+        <option value="0">GENERAL</option>
+        <option value="1">FUNDING</option>
+        <option value="2">TECHNICAL</option>
+      </select>
+      <input type="number" id="duration" class="form-control mb-2" placeholder="Duration (in seconds)">
+      <button class="btn btn-success" id="createProposal">Create Proposal</button>
     </div>
 
-    <div class="card">
-      <div class="card-header">📜 Delegate Your Vote</div>
-      <div class="card-body">
-        <input type="text" id="delegateTo" class="form-control mb-2" placeholder="Delegate to Address">
-        <button class="btn btn-primary" id="delegateBtn">Delegate</button>
-      </div>
+    <div class="section">
+      <h2>📜 Delegate Your Vote</h2>
+      <input type="text" id="delegateTo" class="form-control mb-2" placeholder="Delegate to Address">
+      <button class="btn btn-primary" id="delegateBtn">Delegate</button>
     </div>
 
-    <div class="card">
-      <div class="card-header">📋 All Proposals</div>
-      <div class="card-body" id="proposalsList">
+    <div class="section">
+      <h2>📋 All Proposals</h2>
+      <div id="proposalsList">
         <p>Loading proposals...</p>
       </div>
     </div>
@@ -87,14 +148,14 @@
         const hasVoted = await daoContract.hasVoted(i, currentAccount);
         const timeLeft = await daoContract.getRemainingTime(i);
         const div = document.createElement("div");
-        div.className = "mb-3 p-3 border bg-light rounded";
+        div.className = "proposal-card";
         div.innerHTML = `
-          <strong>ID:</strong> ${i} <br>
-          <strong>Description:</strong> ${p[0]} <br>
-          <strong>Type:</strong> ${["GENERAL", "FUNDING", "TECHNICAL"][p[1]]} <br>
-          <strong>Votes:</strong> ${p[2]} <br>
-          <strong>Deadline:</strong> ${new Date(Number(p[3]) * 1000).toLocaleString()} <br>
-          <strong>Status:</strong> ${p[4] ? "Executed" : "Pending"}, Approved: ${p[5]}<br>
+          <h5>Proposal #${i}</h5>
+          <p><strong>Description:</strong> ${p[0]}</p>
+          <p><strong>Type:</strong> ${["GENERAL", "FUNDING", "TECHNICAL"][p[1]]}</p>
+          <p><strong>Votes:</strong> ${p[2]}</p>
+          <p><strong>Deadline:</strong> ${new Date(Number(p[3]) * 1000).toLocaleString()}</p>
+          <p><strong>Status:</strong> ${p[4] ? "Executed" : "Pending"}, Approved: ${p[5]}</p>
           ${!p[4] && timeLeft > 0 && !hasVoted ? `<button class='btn btn-outline-primary btn-sm mt-2' onclick='vote(${i})'>Vote</button>` : ""}
           ${!p[4] && timeLeft === 0 ? `<button class='btn btn-outline-danger btn-sm mt-2' onclick='execute(${i})'>Execute</button>` : ""}
         `;
