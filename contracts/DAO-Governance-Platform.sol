@@ -25,6 +25,7 @@ contract DAOGovernance is Ownable {
     }
 
     mapping(uint => Proposal) public proposals;
+    uint[] public proposalIds;
 
     event ProposalCreated(uint id, string description, ProposalType proposalType, uint deadline);
     event Voted(uint proposalId, address voter);
@@ -45,6 +46,8 @@ contract DAOGovernance is Ownable {
         p.description = _description;
         p.deadline = block.timestamp + _duration;
         p.proposalType = _type;
+
+        proposalIds.push(proposalCount);
 
         emit ProposalCreated(p.id, _description, _type, p.deadline);
     }
@@ -127,5 +130,10 @@ contract DAOGovernance is Ownable {
         p.voteCount += votes;
 
         emit Voted(_proposalId, voter);
+    }
+
+    /// 🔍 New Function: Return all proposal IDs
+    function getAllProposalIds() public view returns (uint[] memory) {
+        return proposalIds;
     }
 }
