@@ -106,7 +106,6 @@ contract DAOGovernance is Ownable {
         }
     }
 
-    // Gasless voting via EIP-712 signature
     function voteBySig(
         uint _proposalId,
         address voter,
@@ -132,8 +131,22 @@ contract DAOGovernance is Ownable {
         emit Voted(_proposalId, voter);
     }
 
-    /// 🔍 New Function: Return all proposal IDs
     function getAllProposalIds() public view returns (uint[] memory) {
         return proposalIds;
+    }
+
+    /// 🔍 New Function: Human-readable status of a proposal
+    function getProposalStatus(uint _proposalId) public view returns (string memory) {
+        Proposal storage p = proposals[_proposalId];
+
+        if (p.executed) {
+            return p.approved ? "Executed & Approved" : "Executed & Rejected";
+        }
+
+        if (block.timestamp < p.deadline) {
+            return "Active";
+        } else {
+            return "Pending Execution";
+        }
     }
 }
