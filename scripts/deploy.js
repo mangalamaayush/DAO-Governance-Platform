@@ -1,14 +1,23 @@
-const hre = require("hardhat");
+// scripts/deploy.js
+const { ethers } = require("hardhat");
 
 async function main() {
-    const DAOGovernance = await hre.ethers.getContractFactory("DAOGovernance");
-    const dao = await DAOGovernance.deploy();
+  // Deploy the GovToken first
+  const GovToken = await ethers.getContractFactory("GovToken");
+  const govToken = await GovToken.deploy("Governance Token", "GOV");
+  await govToken.deployed();
+  console.log(`✅ GovToken deployed at: ${govToken.address}`);
 
-    await dao.deployed();
-    console.log("DAO Governance Contract deployed to:", dao.address);
+  // Deploy the DAOGovernance contract with GovToken address
+  const DAOGovernance = await ethers.getContractFactory("DAOGovernance");
+  const daoGovernance = await DAOGovernance.deploy(govToken.address);
+  await daoGovernance.deployed();
+  console.log(`✅ DAOGovernance deployed at: ${daoGovernance.address}`);
 }
 
-main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("❌ Deployment failed:", error);
+    process.exit(1);
+  });
