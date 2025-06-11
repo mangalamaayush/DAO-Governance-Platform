@@ -1,79 +1,126 @@
-const govTokenAddress = "YOUR_GOVTOKEN_ADDRESS";
-const daoAddress = "YOUR_DAOGOVERNANCE_ADDRESS";
+const contractAddress = "0xd05bDCbA66cCF6F759B9dA07c246E83F8F8b5946";
 
-// Replace with your ABIs
-const govTokenABI = [ /* GovToken ABI here */ ];
-const daoABI = [ /* DAO Governance ABI here */ ];
-
-let provider, signer, daoContract, tokenContract, currentAccount;
-
-document.getElementById("connectWallet").onclick = async () => {
-  provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  signer = provider.getSigner();
-  currentAccount = await signer.getAddress();
-  document.getElementById("walletInfo").innerText = `Connected: ${currentAccount}`;
-
-  daoContract = new ethers.Contract(daoAddress, daoABI, signer);
-  tokenContract = new ethers.Contract(govTokenAddress, govTokenABI, signer);
-
-  loadProposals();
-};
-
-async function loadProposals() {
-  const list = document.getElementById("proposalsList");
-  list.innerHTML = "";
-  const count = await daoContract.proposalCount();
-
-  for (let i = 1; i <= count; i++) {
-    const proposal = await daoContract.getProposal(i);
-    const voted = await daoContract.hasVoted(i, currentAccount);
-    const remaining = await daoContract.getRemainingTime(i);
-
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <p><strong>ID:</strong> ${i}</p>
-      <p><strong>Description:</strong> ${proposal[0]}</p>
-      <p><strong>Type:</strong> ${["GENERAL", "FUNDING", "TECHNICAL"][proposal[1]]}</p>
-      <p><strong>Votes:</strong> ${proposal[2]}</p>
-      <p><strong>Ends in:</strong> ${remaining} seconds</p>
-      <p><strong>Status:</strong> ${proposal[4] ? "Executed" : "Pending"} | Approved: ${proposal[5]}</p>
-      ${!voted && remaining > 0 ? `<button onclick="vote(${i})">Vote</button>` : "<em>Already voted or closed</em>"}
-      ${proposal[4] ? "" : `<button onclick="execute(${i})">Execute</button>`}
-      <hr/>
-    `;
-    list.appendChild(div);
+const abi = [
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_govToken", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "indexed": false, "internalType": "string", "name": "description", "type": "string" },
+      { "indexed": false, "internalType": "uint8", "name": "proposalType", "type": "uint8" },
+      { "indexed": false, "internalType": "uint256", "name": "deadline", "type": "uint256" }
+    ],
+    "name": "ProposalCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "uint256", "name": "proposalId", "type": "uint256" },
+      { "indexed": false, "internalType": "address", "name": "voter", "type": "address" }
+    ],
+    "name": "Voted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "uint256", "name": "proposalId", "type": "uint256" },
+      { "indexed": false, "internalType": "bool", "name": "approved", "type": "bool" }
+    ],
+    "name": "Executed",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "proposalCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "govToken",
+    "outputs": [{ "internalType": "contract GovToken", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_description", "type": "string" },
+      { "internalType": "uint256", "name": "_duration", "type": "uint256" },
+      { "internalType": "enum DAOGovernance.ProposalType", "name": "_type", "type": "uint8" }
+    ],
+    "name": "createProposal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "_proposalId", "type": "uint256" }],
+    "name": "vote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_proposalId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_quorum", "type": "uint256" }
+    ],
+    "name": "executeProposal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "_proposalId", "type": "uint256" }],
+    "name": "getProposal",
+    "outputs": [
+      { "internalType": "string", "name": "description", "type": "string" },
+      { "internalType": "enum DAOGovernance.ProposalType", "name": "proposalType", "type": "uint8" },
+      { "internalType": "uint256", "name": "voteCount", "type": "uint256" },
+      { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+      { "internalType": "bool", "name": "executed", "type": "bool" },
+      { "internalType": "bool", "name": "approved", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_proposalId", "type": "uint256" },
+      { "internalType": "address", "name": "_voter", "type": "address" }
+    ],
+    "name": "hasVoted",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "_proposalId", "type": "uint256" }],
+    "name": "getRemainingTime",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_proposalId", "type": "uint256" },
+      { "internalType": "address", "name": "voter", "type": "address" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" }
+    ],
+    "name": "voteBySig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
-}
-
-async function vote(id) {
-  const tx = await daoContract.vote(id);
-  await tx.wait();
-  alert("Voted successfully!");
-  loadProposals();
-}
-
-async function execute(id) {
-  const quorum = prompt("Enter quorum threshold:");
-  const tx = await daoContract.executeProposal(id, quorum);
-  await tx.wait();
-  alert("Executed!");
-  loadProposals();
-}
-
-document.getElementById("delegateBtn").onclick = async () => {
-  const to = document.getElementById("delegateTo").value;
-  const tx = await tokenContract.delegate(to);
-  await tx.wait();
-  alert("Delegated!");
-};
-
-document.getElementById("createProposal").onclick = async () => {
-  const desc = document.getElementById("description").value;
-  const type = document.getElementById("type").value;
-  const duration = document.getElementById("duration").value;
-  const tx = await daoContract.createProposal(desc, duration, type);
-  await tx.wait();
-  alert("Proposal created!");
-  loadProposals();
-};
+];
