@@ -22,6 +22,7 @@ contract DAOGovernance is Ownable {
         bool executed;
         bool approved;
         mapping(address => bool) voters;
+        address[] votersList;
     }
 
     mapping(uint => Proposal) public proposals;
@@ -61,9 +62,36 @@ contract DAOGovernance is Ownable {
         require(votes > 0, "No voting power");
 
         p.voters[msg.sender] = true;
+        p.votersList.push(msg.sender);
         p.voteCount += votes;
 
         emit Voted(_proposalId, msg.sender);
+    }
+
+    function voteBySig(
+        uint _proposalId,
+        address voter,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public {
+        Proposal storage p = proposals[_proposalId];
+        require(block.timestamp < p.deadline, "Voting closed");
+        require(!p.voters[voter], "Already voted");
+
+        bytes32 structHash = keccak256(abi.encode(_proposalId, voter));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", govToken.DOMAIN_SEPARATOR(), structHash));
+        address signer = ECDSA.recover(digest, v, r, s);
+        require(signer == voter, "Invalid signature");
+
+        uint256 votes = govToken.getVotes(voter);
+        require(votes > 0, "No voting power");
+
+        p.voters[voter] = true;
+        p.votersList.push(voter);
+        p.voteCount += votes;
+
+        emit Voted(_proposalId, voter);
     }
 
     function executeProposal(uint _proposalId, uint _quorum) public onlyOwner {
@@ -106,36 +134,10 @@ contract DAOGovernance is Ownable {
         }
     }
 
-    function voteBySig(
-        uint _proposalId,
-        address voter,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public {
-        Proposal storage p = proposals[_proposalId];
-        require(block.timestamp < p.deadline, "Voting closed");
-        require(!p.voters[voter], "Already voted");
-
-        bytes32 structHash = keccak256(abi.encode(_proposalId, voter));
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", govToken.DOMAIN_SEPARATOR(), structHash));
-        address signer = ECDSA.recover(digest, v, r, s);
-        require(signer == voter, "Invalid signature");
-
-        uint256 votes = govToken.getVotes(voter);
-        require(votes > 0, "No voting power");
-
-        p.voters[voter] = true;
-        p.voteCount += votes;
-
-        emit Voted(_proposalId, voter);
-    }
-
     function getAllProposalIds() public view returns (uint[] memory) {
         return proposalIds;
     }
 
-    /// 🔍 New Function: Human-readable status of a proposal
     function getProposalStatus(uint _proposalId) public view returns (string memory) {
         Proposal storage p = proposals[_proposalId];
 
@@ -148,5 +150,10 @@ contract DAOGovernance is Ownable {
         } else {
             return "Pending Execution";
         }
+    }
+
+    /// ✅ New Function: Get count of unique voters on a proposal
+    function getVoterCount(uint _proposalId) public view returns (uint) {
+        return proposals[_proposalId].votersList.length;
     }
 }
