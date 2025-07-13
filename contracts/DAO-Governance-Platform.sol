@@ -152,8 +152,44 @@ contract DAOGovernance is Ownable {
         }
     }
 
-    /// ✅ New Function: Get count of unique voters on a proposal
+    /// ✅ Function 1: Get number of voters
     function getVoterCount(uint _proposalId) public view returns (uint) {
         return proposals[_proposalId].votersList.length;
+    }
+
+    /// ✅ Function 2: Get proposal summary in one call
+    function getProposalSummary(uint _proposalId)
+        public
+        view
+        returns (
+            uint id,
+            string memory description,
+            ProposalType proposalType,
+            uint voteCount,
+            uint deadline,
+            uint timeLeft,
+            bool executed,
+            bool approved,
+            string memory status,
+            uint voterCount
+        )
+    {
+        Proposal storage p = proposals[_proposalId];
+        uint timeRemaining = getRemainingTime(_proposalId);
+        string memory proposalStatus = getProposalStatus(_proposalId);
+        uint voters = getVoterCount(_proposalId);
+
+        return (
+            p.id,
+            p.description,
+            p.proposalType,
+            p.voteCount,
+            p.deadline,
+            timeRemaining,
+            p.executed,
+            p.approved,
+            proposalStatus,
+            voters
+        );
     }
 }
