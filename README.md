@@ -1,5 +1,6 @@
 ##🗳️ DAO Governance Portal
-A fully on-chain governance platform built with Solidity, Ethers.js, and Bootstrap to manage decentralized proposals, voting, execution, and delegation — powered by a custom ERC20 GovToken.
+
+- A fully on-chain governance platform built with Solidity, Ethers.js, and Bootstrap to manage decentralized proposals, voting, execution, and delegation — powered by a custom ERC20 GovToken.
 
 ---
 
