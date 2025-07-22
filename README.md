@@ -52,5 +52,6 @@ Our goal is to build a lightweight and transparent mechanism for decentralized c
 ## Contract Details : 0xd05bDCbA66cCF6F759B9dA07c246E83F8F8b5946
 <img width="1119" alt="image" src="https://github.com/user-attachments/assets/5a995553-3ca1-41c2-bac2-5a5e6854d6de" />
 
-
+---
+- Made by Ayush Mangalam | Undergraduate Developer
 
